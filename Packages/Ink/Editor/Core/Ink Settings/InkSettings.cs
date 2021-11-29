@@ -82,8 +82,18 @@ namespace Ink.UnityIntegration {
 		public bool handleJSONFilesAutomatically = true;
 
 		public int compileTimeout = 30;
-		
+
 		public bool printInkLogsInConsoleOnCompile;
+
+		public DefaultAsset autoIncludeFile;
+		public string autoIncludeFilePath
+		{
+			get
+			{
+				if (autoIncludeFile == null) return "";
+				else return AssetDatabase.GetAssetPath(autoIncludeFile);
+			}
+		}
 
 		#if UNITY_EDITOR && !UNITY_2018_1_OR_NEWER
 		[MenuItem("Edit/Project Settings/Ink", false, 500)]

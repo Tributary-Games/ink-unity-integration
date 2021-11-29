@@ -63,6 +63,7 @@ namespace Ink.UnityIntegration {
             settings.printInkLogsInConsoleOnCompile = EditorGUILayout.Toggle(new GUIContent("Print ink TODOs in console on compile", "When enabled, ink lines starting with TODO are printed in the console."), settings.printInkLogsInConsoleOnCompile);
             settings.handleJSONFilesAutomatically = EditorGUILayout.Toggle(new GUIContent("Handle JSON Automatically", "Whether JSON files are moved, renamed and deleted along with their ink files."), settings.handleJSONFilesAutomatically);
 			settings.compileTimeout = EditorGUILayout.IntField(new GUIContent("Compile Timeout", "The max time the compiler will attempt to compile for in case of unhanded errors. You may need to increase this for very large ink projects."), settings.compileTimeout);
+            settings.autoIncludeFile = (DefaultAsset)EditorGUILayout.ObjectField(new GUIContent("Auto include", "Optional. An ink file that'll be automatically included into all master files prior to compilation."), settings.autoIncludeFile, typeof(DefaultAsset));
 
 			EditorGUIUtility.labelWidth = cachedLabelWidth;
 
@@ -88,6 +89,7 @@ namespace Ink.UnityIntegration {
             EditorGUILayout.PropertyField(settings.FindProperty("printInkLogsInConsoleOnCompile"), new GUIContent("Print ink TODOs in console on compile", "When enabled, ink lines starting with TODO are printed in the console."));
             EditorGUILayout.PropertyField(settings.FindProperty("handleJSONFilesAutomatically"), new GUIContent("Handle JSON Automatically", "Whether JSON files are moved, renamed and deleted along with their ink files."));
 			EditorGUILayout.PropertyField(settings.FindProperty("compileTimeout"), new GUIContent("Compile Timeout", "The max time the compiler will attempt to compile for in case of unhanded errors. You may need to increase this for very large ink projects."));
+            EditorGUILayout.PropertyField(settings.FindProperty("autoIncludeFile"), new GUIContent("Auto include", "Optional. An ink file that'll be automatically included into all master files prior to compilation."));
             
             if(EditorGUI.EndChangeCheck()) {
 				settings.ApplyModifiedProperties();

@@ -121,7 +121,8 @@ namespace Ink.UnityIntegration {
 			public InkFile inkFile;
 			public string compiledJson;
 			public string inkAbsoluteFilePath;
-			public string jsonAbsoluteFilePath;
+            public string autoIncludePath;
+            public string jsonAbsoluteFilePath;
 			public List<InkCompilerLog> logOutput = new List<InkCompilerLog>();
 			public List<string> unhandledErrorOutput = new List<string>();
 			public DateTime startTime;
@@ -320,6 +321,8 @@ namespace Ink.UnityIntegration {
 				Debug.LogError("Tried to compile ink file but input was null.");
 				return;
 			}
+            if (inkFile.inkAsset == InkSettings.instance.autoIncludeFile) // We do not want to compile the autoIncludeFile on its own
+                return;
 			if(!inkFile.isMaster)
 				Debug.LogWarning("Compiling InkFile which is an include. Any file created is likely to be invalid. Did you mean to call CompileInk on inkFile.master?");
 
@@ -338,11 +341,17 @@ namespace Ink.UnityIntegration {
 
 			string inputPath = InkEditorUtils.CombinePaths(inkFile.absoluteFolderPath, Path.GetFileName(inkFile.filePath));
 			Debug.Assert(inkFile.absoluteFilePath == inputPath);
+            string autoIncludeAbsoluteFilePath = InkSettings.instance.autoIncludeFile != null
+                ? InkEditorUtils.UnityRelativeToAbsolutePath(InkEditorUtils.SanitizePathString(InkSettings.instance.autoIncludeFilePath))
+                : null;
 
 			CompilationStackItem pendingFile = new CompilationStackItem
 			{
 				inkFile = InkLibrary.GetInkFileWithAbsolutePath(inputPath),
 				inkAbsoluteFilePath = inputPath,
+                autoIncludePath = autoIncludeAbsoluteFilePath != null
+                    ? InkEditorUtils.GetRelativePath(Path.GetDirectoryName(inputPath), autoIncludeAbsoluteFilePath)
+                    : null,
 				jsonAbsoluteFilePath = inkFile.absoluteJSONPath,
 				state = CompilationStackItem.State.Queued,
 				immediate = immediate
@@ -399,7 +408,10 @@ namespace Ink.UnityIntegration {
 			BeginCompilingFile(item);
 
 			var inputString = File.ReadAllText(item.inkAbsoluteFilePath);
-			var compiler = new Compiler(inputString, new Compiler.Options
+            if (item.inkFile.isMaster && item.autoIncludePath != null) // Apply the auto inclusion if needed
+                inputString = $"INCLUDE {item.autoIncludePath}\n\n{inputString}";
+
+            var compiler = new Compiler(inputString, new Compiler.Options
 			{
 				countAllVisits = true,
 				fileHandler = new UnityInkFileHandler(Path.GetDirectoryName(item.inkAbsoluteFilePath)),

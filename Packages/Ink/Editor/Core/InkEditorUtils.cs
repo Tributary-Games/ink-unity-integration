@@ -290,5 +290,28 @@ namespace Ink.UnityIntegration {
 
 			return String.IsNullOrEmpty(extension) && InkLibrary.instance.inkLibrary.Exists(f => f.filePath == path);
 		}
+
+        public static string GetRelativePath(string relativeTo, string path)
+        {
+#if NETCOREAPP2_0_OR_GREATER
+			return Path.GetRelativePath(relativeTo, path);
+#else
+            if (string.IsNullOrEmpty(relativeTo)) throw new ArgumentNullException(nameof(relativeTo));
+            if (string.IsNullOrEmpty(path)) throw new ArgumentNullException(nameof(path));
+
+            if (relativeTo[relativeTo.Length - 1] != '/')
+                relativeTo = $"{relativeTo}/";
+
+            Uri relativeToUri = new Uri(relativeTo);
+            Uri pathUri = new Uri(path);
+
+            if (relativeToUri.Scheme != pathUri.Scheme) return path;
+
+            Uri finalRelativeUri = relativeToUri.MakeRelativeUri(pathUri);
+            string finalRelativePath = Uri.UnescapeDataString(finalRelativeUri.ToString());
+
+            return finalRelativePath;
+#endif
+        }
 	}
 }
